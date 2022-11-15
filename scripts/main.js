@@ -52,6 +52,9 @@ function populateCardsDynamically() {
   let hikeCardGroup = document.getElementById("hikeCardGroup");
 
   db.collection("hikes")
+    // .where("city", "==", "North Vancouver")
+    .orderBy("level")
+    .limit(3)
     .get()
     .then((allHikes) => {
       allHikes.forEach((doc) => {
@@ -65,6 +68,8 @@ function populateCardsDynamically() {
         testHikeCard.querySelector("i").id = "save-" + hikeID;
         testHikeCard.querySelector("i").onclick = () => saveBookmark(hikeID);
         testHikeCard.querySelector("img").src = `./images/${hikeID}.jpg`; //equiv getElementByTagName
+        testHikeCard.querySelector(".read-more").href =
+          "eachHike.html?hikeName=" + hikeName + "&id=" + hikeID;
         hikeCardGroup.appendChild(testHikeCard);
       });
     });
@@ -95,6 +100,6 @@ function saveBookmark(hikeID) {
       var iconID = "save-" + hikeID;
       //console.log(iconID);
       //this is to change the icon of the hike that was saved to "filled"
-      document.getElementById(iconID).innerText="bookmark";
+      document.getElementById(iconID).innerText = "bookmark";
     });
 }

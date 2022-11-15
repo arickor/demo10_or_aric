@@ -1,3 +1,20 @@
+var currentUser;
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    currentUser = db.collection("users").doc(user.uid); //global
+    console.log(currentUser);
+
+    // the following functions are always called when someone is logged in
+    read_display_Quote();
+    insertName();
+    populateCardsDynamically();
+  } else {
+    // No user is signed in.
+    console.log("No user is signed in");
+    window.location.href = "login.html";
+  }
+});
+
 function read_display_Quote() {
   //console.log("inside the function")
 
@@ -10,7 +27,7 @@ function read_display_Quote() {
         tuesdayDoc.data().quote;
     });
 }
-read_display_Quote();
+// read_display_Quote();
 
 function insertName() {
   // to check if the user is logged in:
@@ -28,7 +45,7 @@ function insertName() {
     }
   });
 }
-insertName();
+// insertName();
 
 function populateCardsDynamically() {
   let hikeCardTemplate = document.getElementById("hikeCardTemplate");
@@ -45,13 +62,39 @@ function populateCardsDynamically() {
         testHikeCard.querySelector(".card-title").innerHTML = hikeName; //equiv getElementByClassName
         testHikeCard.querySelector(".card-length").innerHTML = hikeLength; //equiv getElementByClassName
         testHikeCard.querySelector("a").onclick = () => setHikeData(hikeID); //equiv getElementByTagName
+        testHikeCard.querySelector("i").id = "save-" + hikeID;
+        testHikeCard.querySelector("i").onclick = () => saveBookmark(hikeID);
         testHikeCard.querySelector("img").src = `./images/${hikeID}.jpg`; //equiv getElementByTagName
         hikeCardGroup.appendChild(testHikeCard);
       });
     });
 }
-populateCardsDynamically();
+// populateCardsDynamically();
 
 function setHikeData(id) {
   localStorage.setItem("hikeID", id);
+}
+
+//-----------------------------------------------------------------------------
+// This function is called whenever the user clicks on the "bookmark" icon.
+// It adds the hike to the "bookmarks" array
+// Then it will change the bookmark icon from the hollow to the solid version.
+//-----------------------------------------------------------------------------
+function saveBookmark(hikeID) {
+  currentUser
+    .set(
+      {
+        bookmarks: firebase.firestore.FieldValue.arrayUnion(hikeID),
+      },
+      {
+        merge: true,
+      }
+    )
+    .then(function () {
+      console.log("bookmark has been saved for: " + currentUser);
+      var iconID = "save-" + hikeID;
+      //console.log(iconID);
+      //this is to change the icon of the hike that was saved to "filled"
+      document.getElementById(iconID).innerText="bookmark";
+    });
 }
